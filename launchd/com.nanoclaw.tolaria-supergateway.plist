@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>com.nanoclaw.tolaria-supergateway</string>
+
+    <key>ProgramArguments</key>
+    <array>
+        <string>/bin/bash</string>
+        <string>-c</string>
+        <string>PATH=/opt/homebrew/bin:/usr/local/bin:$PATH WS_UI_PORT=9711 npx -y supergateway --stdio "/opt/homebrew/bin/node /Applications/Tolaria.app/Contents/Resources/mcp-server/index.js" --port 8080 --host 0.0.0.0</string>
+    </array>
+
+    <key>RunAtLoad</key>
+    <true/>
+
+    <key>KeepAlive</key>
+    <true/>
+
+    <key>StandardOutPath</key>
+    <string>/tmp/tolaria-supergateway.log</string>
+
+    <key>StandardErrorPath</key>
+    <string>/tmp/tolaria-supergateway-error.log</string>
+</dict>
+</plist>
