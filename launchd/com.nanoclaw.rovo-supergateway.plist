@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>com.nanoclaw.rovo-supergateway</string>
+
+    <key>ProgramArguments</key>
+    <array>
+        <string>/bin/bash</string>
+        <string>-c</string>
+        <string>PATH=/opt/homebrew/bin:/usr/local/bin:$PATH MCP_REMOTE_CONFIG_DIR=/Users/morten/.mcp-auth npx -y supergateway --port 8082 --stdio "npx -y mcp-remote@latest https://mcp.atlassian.com/v1/mcp/authv2"</string>
+    </array>
+
+    <key>RunAtLoad</key>
+    <true/>
+
+    <key>KeepAlive</key>
+    <true/>
+
+    <key>StandardOutPath</key>
+    <string>/tmp/rovo-supergateway.log</string>
+
+    <key>StandardErrorPath</key>
+    <string>/tmp/rovo-supergateway-error.log</string>
+</dict>
+</plist>
