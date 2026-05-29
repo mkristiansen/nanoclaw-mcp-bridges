@@ -1,23 +1,30 @@
 # nanoclaw-mcp-bridges
 
-Bridge scripts and launchd plists that connect [Svend](https://nanoclaw.com) (a NanoClaw agent running in a Docker container on a work laptop) to MCP servers that run on the host Mac.
+Bridge scripts, launchd plists, and container config that connect [Svend](https://nanoclaw.com) (a NanoClaw agent running in a Docker container on a Mac) to MCP servers.
 
 ## Architecture
 
-The agent container cannot run Mac-native processes (AppleScript, Electron apps, etc.), so MCP servers that need local Mac access run on the host Mac and are exposed over HTTP via [supergateway](https://github.com/supercorp-ai/supergateway). Each bridge script inside the container connects to its supergateway instance over `host.docker.internal`.
+Two categories of MCP server:
+
+**Host-bridged** — MCP servers that need local Mac access (AppleScript, Electron apps, etc.) run on the host Mac and are exposed over HTTP via [supergateway](https://github.com/supercorp-ai/supergateway). Bridge scripts inside the container connect over `host.docker.internal`.
+
+**In-container** — MCP servers that communicate only with external APIs run directly inside the container. No bridge or host-side process needed.
 
 ```
-┌─────────────────────────────────┐      ┌──────────────────────────────────────┐
-│   Docker container (work laptop)│      │  Host Mac (work laptop)              │
-│                                 │      │                                      │
-│  NanoClaw agent                 │      │  supergateway :8080                  │
-│    └── tolaria-bridge.mjs ──────┼─────▶│    └── Tolaria MCP server            │
-│    └── rovo-bridge.mjs    ──────┼─────▶│  supergateway :8082                  │
-│                                 │      │    └── mcp-remote → Atlassian Rovo   │
-└─────────────────────────────────┘      └──────────────────────────────────────┘
+┌────────────────────────────────────────────────┐      ┌──────────────────────────────────────┐
+│   Docker container (Mac)                       │      │  Host Mac                            │
+│                                                │      │                                      │
+│  NanoClaw agent                                │      │  supergateway :8080                  │
+│    └── tolaria-bridge.mjs ────────────────────┼─────▶│    └── Tolaria MCP server            │
+│    └── rovo-bridge.mjs ───────────────────────┼─────▶│  supergateway :8082                  │
+│    └── aha (pnpm dlx @cedricziel/aha-mcp)     │      │    └── mcp-remote → Atlassian Rovo   │
+│         └──▶ merative1.aha.io (via OneCLI)    │      │                                      │
+└────────────────────────────────────────────────┘      └──────────────────────────────────────┘
 ```
 
-Both bridges reconnect automatically (5 s retry) if the host-side supergateway drops. The launchd plists keep supergateway alive and restart it after crashes or reboots.
+Host-bridged services reconnect automatically (5 s retry) if the supergateway drops. The launchd plists keep supergateway alive across crashes and reboots.
+
+The full container MCP config is in [`container.json`](./container.json).
 
 ---
 
@@ -82,7 +89,34 @@ args: ["/workspace/agent/rovo-bridge.mjs"]
 
 ---
 
-## Verifying both services
+## Aha! (product roadmap)
+
+**What it does:** Gives the agent 49 tools for reading and writing Aha! features, epics, releases, ideas, and more — connected to `merative1.aha.io`.
+
+**No host-side setup required.** Aha runs directly in the container via `pnpm dlx`. Credentials are injected at the HTTP boundary by [OneCLI](https://onecli.sh) — no token files or env vars needed on the host.
+
+### Agent container setup
+
+Add to agent group MCP config:
+
+```
+name: aha
+command: pnpm
+args: ["dlx", "@cedricziel/aha-mcp"]
+env:
+  AHA_COMPANY: onecli-managed
+  AHA_TOKEN: onecli-managed
+```
+
+Connect the credential once via OneCLI:
+
+```
+http://127.0.0.1:10254/connections/custom?create=generic&host=merative1.aha.io&path=%2F*&name=Aha+API+Token
+```
+
+---
+
+## Verifying host-bridged services
 
 ```bash
 launchctl list | grep nanoclaw
