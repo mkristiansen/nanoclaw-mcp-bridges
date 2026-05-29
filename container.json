@@ -1,0 +1,38 @@
+{
+  "mcpServers": {
+    "tolaria": {
+      "command": "node",
+      "args": [
+        "/workspace/agent/tolaria-bridge.mjs"
+      ],
+      "env": {}
+    },
+    "rovo": {
+      "command": "node",
+      "args": [
+        "/workspace/agent/rovo-bridge.mjs"
+      ],
+      "env": {}
+    },
+    "aha": {
+      "command": "pnpm",
+      "args": [
+        "dlx",
+        "@cedricziel/aha-mcp"
+      ],
+      "env": {
+        "AHA_COMPANY": "onecli-managed",
+        "AHA_TOKEN": "onecli-managed"
+      }
+    }
+  },
+  "packages": {
+    "apt": [],
+    "npm": []
+  },
+  "additionalMounts": [],
+  "skills": "all",
+  "groupName": "Svend",
+  "assistantName": "Svend",
+  "agentGroupId": "ag-1779868435250-warz41"
+}
